@@ -1,11 +1,13 @@
 package com.epam.rd.autotasks.segments;
 
 import static java.lang.Math.sqrt;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.lang.StrictMath.pow;
 
 class Segment {
-    Point start;
-    Point end;
+    private final Point start;
+    private final Point end;
     public Segment(Point start, Point end) {
         this.start = start;
         this.end = end;
@@ -14,17 +16,22 @@ class Segment {
                 throw new IllegalArgumentException();
         }
     }
-
     double length() {
         return sqrt(
                pow(end.getX() - start.getX(), 2) +
                pow(end.getY() - start.getY(), 2) );
     }
 
-    double length(Point start, Point end) {
-        return sqrt(
-               pow(end.getX() - start.getX(), 2) +
-               pow(end.getY() - start.getY(), 2) );
+    boolean inRange(Segment segment, Point intersection){
+        double minX_First = min(start.getX(), end.getX());
+        double maxX_First = max(start.getX(), end.getX());
+        double minX_Second = min(segment.start.getX(), segment.end.getX());
+        double maxX_Second = max(segment.start.getX(), segment.end.getX());
+
+        return minX_First <= intersection.getX() &&
+                intersection.getX() <= maxX_First &&
+                minX_Second <= intersection.getX() &&
+                intersection.getX() <= maxX_Second;
     }
     Point middle() {
         return new Point((start.getX() + end.getX()) / 2,
@@ -34,16 +41,15 @@ class Segment {
         final double a;
         final double b;
         final double c;
-        a = start.getX() * end.getY() - start.getY() * end.getX();
-        b = another.start.getX() * another.end.getY() - another.start.getY() * another.start.getX();
+        a = (start.getX() * end.getY()) - (start.getY() * end.getX());
+        b = (another.start.getX() * another.end.getY()) - (another.start.getY() * another.end.getX());
         c = (start.getX() - end.getX()) * (another.start.getY() - another.end.getY()) -
-                (start.getY() - end.getY()) * (another.start.getX() - another.end.getX());
+            (start.getY() - end.getY()) * (another.start.getX() - another.end.getX());
         Point result = new Point((a * (another.start.getX() - another.end.getX()) - b * (start.getX() - end.getX())) / c,
-                (a * (another.start.getY() - another.end.getY()) - b * (start.getY() - end.getY())) / c);
+                                 (a * (another.start.getY() - another.end.getY()) - b * (start.getY() - end.getY())) / c);
 
-        if ((c != 0) && (Math.abs(this.length() - (length(this.start, result) + length(this.end, result))) < 1e-9)
-                && (Math.abs(another.length() - (length(another.start, result) + length(another.end, result))) < 1e-9)) {
+        if ((c != 0) && inRange(another, result)){
             return result;
-        } else {return null;}
+        }else {return null;}
     }
 }
